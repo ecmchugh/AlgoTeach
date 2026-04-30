@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from problems_data import PROBLEMS
 
 load_dotenv()
 
@@ -29,6 +30,10 @@ app.add_middleware(
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
+@app.get("/api/problems")
+def list_problems() -> list[Problem]:
+    return PROBLEMS
 
 
 if __name__ == "__main__":
