@@ -4,8 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from problems_data import PROBLEMS
+from pymongo import MongoClient
 
 load_dotenv()
+
+client = MongoClient(os.environ[MONGODB_URI])
+db = client.get_default_database()
 
 class Problem(BaseModel):
     id: str
