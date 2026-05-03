@@ -1,19 +1,37 @@
 import { useEffect, useState } from 'react'
 
 function App() {
-  const [status, setStatus] = useState('checking...')
+  const [problems, setProblems] = useState([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetch('http://127.0.0.1:4000/api/health')
+    fetch('http://127.0.0.1:4000/api/problems')
       .then((res) => res.json())
-      .then((data) => setStatus(data.ok ? 'OK' : 'not OK'))
-      .catch((err) => setStatus(`error: ${err.message}`))
+      .then((data) => setProblems(data))
+      .catch((err) => setError(err.message))
   }, [])
+
+  if (error) {
+    return <p>Error: {error}</p>
+  }
+
+  if (problems.length === 0) {
+    return <p>Loading...</p>
+  }
+
+  const problem = problems[currentIndex]
 
   return (
     <div>
       <h1>AlgoTeach</h1>
-      <p>Backend says: {status}</p>
+      <h2>{problem.title}</h2>
+      <p>{problem.prompt}</p>
+      <div>
+        {problem.choices.map((choice) => (
+          <button key={choice}>{choice}</button>
+        ))}
+      </div>
     </div>
   )
 }
