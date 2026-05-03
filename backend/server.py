@@ -1,7 +1,8 @@
 import os
 import certifi
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from openai import OpenAI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient
@@ -10,6 +11,8 @@ load_dotenv()
 
 client = MongoClient(os.environ["MONGODB_URI"], tlsCAFile=certifi.where())
 db = client.get_default_database()
+
+openai_client = OpenAI()
 
 class Problem(BaseModel):
     id: str
