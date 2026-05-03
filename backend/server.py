@@ -42,6 +42,19 @@ def health():
 def list_problems() -> list[Problem]:
     return list(db.problems.find({}, {"_id": 0}))
 
+@app.get("/api/problems/{problem_id}/explain-deeper")
+def explain_deeper(problem_id: str):
+    problem = db.problems.find_one({"id": problem_id}, {"_id": 0})
+    if problem is None:
+        raise HTTPException(status_code=404, detail="Problem not found")
+    prompt = f"""Explain the algorithmic pattern '{problem["pattern"]}' as it applies to the problem '{problem["title"]}' for a learner studying coding interviews. Focus on the intuition and when to recognize this pattern. Keep your response under 50 words."""
+    response = openai_client.chat.completions.create(
+        model = "gpt-4o-mini",
+        messages = [{"role": "user", "content": prompt}]
+    )
+
+    return {"explanation": response.choices[0].message.content}
+
 
 if __name__ == "__main__":
     import uvicorn
