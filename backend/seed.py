@@ -1,11 +1,12 @@
 import os
+import certifi
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from problems_data import PROBLEMS
 
 load_dotenv()
 
-client = MongoClient(os.environ["MONGODB_URI"])
+client = MongoClient(os.environ["MONGODB_URI"], tlsCAFile=certifi.where())
 db = client.get_default_database()
 
 for problem in PROBLEMS:
