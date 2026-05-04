@@ -6,6 +6,7 @@ from openai import OpenAI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient
+from datetime import datetime
 
 load_dotenv()
 
@@ -23,6 +24,11 @@ class Problem(BaseModel):
     explanation: str
     clues: list[str]
     complexity: str
+
+class AttemptIn(BaseModel):
+    session_id: str
+    problem_id: str
+    selected: str
 
 app = FastAPI(title="AlgoTeach API")
 
