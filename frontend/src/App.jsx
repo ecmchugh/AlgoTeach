@@ -5,6 +5,8 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selected, setSelected] = useState(null)
   const [error, setError] = useState(null)
+  const [deeperExplanation, setDeeperExplanation] = useState(null)
+  const [loadingDeeper, setLoadingDeeper] = useState(false)
 
   useEffect(() => {
     fetch('http://127.0.0.1:4000/api/problems')
@@ -27,7 +29,23 @@ function App() {
 
   function handleNext() {
     setSelected(null)
+    setDeeperExplanation(null)
+    setLoadingDeeper(false)
     setCurrentIndex((prev) => (prev + 1) % problems.length)
+  }
+
+  function handleExplainDeeper() {
+    setLoadingDeeper(true)
+    fetch(`http://127.0.0.1:4000/api/problems/${problem.id}/explain-deeper`)
+      .then((res) => res.json())
+      .then((data) => {
+        setDeeperExplanation(data.explanation)
+        setLoadingDeeper(false)
+      })
+      .catch((err) => {
+        setDeeperExplanation(`Error: ${err.message}`)
+        setLoadingDeeper(false)
+      })
   }
 
   return (
@@ -61,6 +79,21 @@ function App() {
             {problem.clues.map((clue) => <li key={clue}>{clue}</li>)}
           </ul>
           <p><strong>Complexity:</strong> {problem.complexity}</p>
+
+          {!deeperExplanation && (
+            <button onClick={handleExplainDeeper} disabled={loadingDeeper}>
+              {loadingDeeper ? 'Thinking...' : 'Get deeper explanation'}
+            </button>
+          )}
+
+          {deeperExplanation && (
+            <div>
+              <p><strong>Deeper explanation:</strong></p>
+              <p>{deeperExplanation}</p>
+            </div>
+          )}
+
+          <br />
           <button onClick={handleNext}>Next problem</button>
         </div>
       )}
