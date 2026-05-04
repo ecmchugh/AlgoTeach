@@ -6,6 +6,7 @@ from openai import OpenAI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient
+from datetime import datetime
 
 load_dotenv()
 
