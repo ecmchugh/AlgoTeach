@@ -25,6 +25,11 @@ class Problem(BaseModel):
     clues: list[str]
     complexity: str
 
+class AttemptIn(BaseModel):
+    session_id: str
+    problem_id: str
+    selected: str
+
 app = FastAPI(title="AlgoTeach API")
 
 app.add_middleware(
