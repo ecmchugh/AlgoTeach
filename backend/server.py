@@ -77,6 +77,35 @@ def record_attempt(attempt: AttemptIn):
     db.attempts.insert_one(record)
     return {"ok": True}
 
+@app.get("/api/stats")
+def get_stats(session: str):                                                                                                                        
+    pipeline = [
+        {"$match": {"session_id": session}},                                                                                                        
+        {"$group": {                                      
+            "_id": "$pattern",
+            "total": {"$sum": 1},
+            "correct": {"$sum": {"$cond": ["$correct", 1, 0]}},                                                                                     
+        }},
+        {"$project": {                                                                                                                              
+            "pattern": "$_id",                            
+            "total": 1,
+            "correct": 1,                                                                                                                           
+            "success_rate": {"$divide": ["$correct", "$total"]},
+            "_id": 0,                                                                                                                               
+        }},                                               
+        {"$sort": {"success_rate": 1}},
+    ]                                                                                                                                               
+    by_pattern = list(db.attempts.aggregate(pipeline))
+                                                                                                                                                      
+    total_attempts = db.attempts.count_documents({"session_id": session})                                                                           
+    total_correct = db.attempts.count_documents({"session_id": session, "correct": True})
+                                                                                                                                                      
+    return {                                              
+        "total_attempts": total_attempts,
+        "total_correct": total_correct,
+        "by_pattern": by_pattern,                                                                                                                   
+    }
+
 
 
 if __name__ == "__main__":
