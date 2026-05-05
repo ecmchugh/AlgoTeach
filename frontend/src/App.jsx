@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Editor from '@monaco-editor/react'
 import { PRACTICE_PROMPTS } from './practiceProblems'
 
 const API_BASE = 'http://127.0.0.1:4000'
@@ -105,19 +106,6 @@ function PracticeMode() {
       })
   }
 
-  function handleKeyDown(e) {
-    if (e.key === 'Tab') {
-      e.preventDefault()
-      const start = e.target.selectionStart
-      const end = e.target.selectionEnd
-      const newCode = code.substring(0, start) + '    ' + code.substring(end)
-      setCode(newCode)
-      setTimeout(() => {
-        e.target.selectionStart = e.target.selectionEnd = start + 4
-      }, 0)
-    }
-  }
-
   function changePattern(newPattern) {
     const firstOfPattern = PRACTICE_PROMPTS.find((p) => p.pattern === newPattern)
     setPattern(newPattern)
@@ -168,14 +156,24 @@ function PracticeMode() {
       <label className="text-sm font-medium text-slate-500 mb-2 block">
         Your code
       </label>
-      <textarea
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        onKeyDown={handleKeyDown}
-        rows={14}
-        spellCheck={false}
-        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg font-mono text-sm focus:border-indigo-400 focus:outline-none resize-y"
-      />
+      <div className="border-2 border-slate-200 rounded-lg overflow-hidden">
+        <Editor
+          height="360px"
+          defaultLanguage="python"
+          value={code}
+          onChange={(value) => setCode(value ?? '')}
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            lineNumbers: 'on',
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            padding: { top: 12, bottom: 12 },
+            tabSize: 4,
+            insertSpaces: true,
+          }}
+        />
+      </div>
 
       <div className="flex flex-wrap gap-3 mt-4">
         <button
