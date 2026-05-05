@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/cascadia-code": "^5.2.3",
+    "@fontsource/lato": "^5.2.7",
     "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/vite": "^4.2.4",
     "react": "^19.2.5",

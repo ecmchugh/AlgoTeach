@@ -1,6 +1,14 @@
 @import "tailwindcss";
+@import "@fontsource/cascadia-code/400.css";
+@import "@fontsource/cascadia-code/700.css";
+@import "@fontsource/lato/400.css";
+@import "@fontsource/lato/700.css";
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Lato", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.font-cascadia {
+  font-family: "Cascadia Code", "Cascadia Mono", Menlo, Consolas, monospace;
 }

@@ -284,7 +284,10 @@ function App() {
 
   const renderHeader = () => (
     <header className="mb-6">
-      <h1 className="text-3xl font-bold text-slate-900 mb-3">AlgoTeach</h1>
+      <h1 className="font-cascadia text-3xl font-bold mb-3 tracking-tight">
+        <span className="text-slate-900">ALGO</span>
+        <span className="text-indigo-600">TEACH</span>
+      </h1>
       <div className="flex gap-2 mb-4">
         <button onClick={() => setMode('quiz')} className={tabClass('quiz')}>
           Quiz
