@@ -3,6 +3,30 @@ import { useEffect, useState } from 'react'
 const API_BASE = 'http://127.0.0.1:4000'
 const RECHECK_DELAY = 3
 
+const PRACTICE_PROMPTS = [
+  {
+    pattern: 'Sliding Window',
+    title: 'Maximum Subarray Sum of Size K',
+    description:
+      'Write a function that takes an array of integers and an integer k, and returns the maximum sum of any contiguous subarray of length k.',
+    starter: 'def max_sum(arr, k):\n    pass\n',
+  },
+  {
+    pattern: 'Sliding Window',
+    title: 'Longest Substring with K Distinct Characters',
+    description:
+      'Write a function that takes a string and an integer k, and returns the length of the longest substring containing at most k distinct characters.',
+    starter: 'def longest_substring(s, k):\n    pass\n',
+  },
+  {
+    pattern: 'Sliding Window',
+    title: 'Smallest Subarray With Given Sum',
+    description:
+      'Write a function that takes an array of positive integers and a target sum, and returns the length of the smallest contiguous subarray whose sum is greater than or equal to the target. Return 0 if no such subarray exists.',
+    starter: 'def smallest_subarray(arr, target):\n    pass\n',
+  },
+]
+
 function shuffle(arr) {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
@@ -67,7 +91,122 @@ function StatsCard({ stats }) {
   )
 }
 
+function PracticeMode() {
+  const [promptIndex, setPromptIndex] = useState(0)
+  const [code, setCode] = useState(PRACTICE_PROMPTS[0].starter)
+  const [feedback, setFeedback] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const current = PRACTICE_PROMPTS[promptIndex]
+
+  function handleSubmit() {
+    setLoading(true)
+    setFeedback(null)
+    fetch(`${API_BASE}/api/evaluate-code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pattern: current.pattern,
+        prompt: current.description,
+        code: code,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setFeedback(data.feedback)
+        setLoading(false)
+      })
+      .catch((err) => {
+        setFeedback(`Error: ${err.message}`)
+        setLoading(false)
+      })
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      const start = e.target.selectionStart
+      const end = e.target.selectionEnd
+      const newCode = code.substring(0, start) + '    ' + code.substring(end)
+      setCode(newCode)
+      setTimeout(() => {
+        e.target.selectionStart = e.target.selectionEnd = start + 4
+      }, 0)
+    }
+  }
+
+  function nextPrompt() {
+    const next = (promptIndex + 1) % PRACTICE_PROMPTS.length
+    setPromptIndex(next)
+    setCode(PRACTICE_PROMPTS[next].starter)
+    setFeedback(null)
+  }
+
+  function resetCode() {
+    setCode(current.starter)
+    setFeedback(null)
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <p className="text-sm font-medium text-indigo-600 mb-1">
+        Practice · {current.pattern}
+      </p>
+      <h2 className="text-xl font-semibold text-slate-900 mb-3">
+        {current.title}
+      </h2>
+      <p className="text-slate-700 mb-5 leading-relaxed">
+        {current.description}
+      </p>
+
+      <label className="text-sm font-medium text-slate-500 mb-2 block">
+        Your code
+      </label>
+      <textarea
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        onKeyDown={handleKeyDown}
+        rows={14}
+        spellCheck={false}
+        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg font-mono text-sm focus:border-indigo-400 focus:outline-none resize-y"
+      />
+
+      <div className="flex flex-wrap gap-3 mt-4">
+        <button
+          onClick={handleSubmit}
+          disabled={loading || !code.trim()}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        >
+          {loading ? 'Checking...' : 'Check my code'}
+        </button>
+        <button
+          onClick={resetCode}
+          className="px-4 py-2 text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition"
+        >
+          Reset
+        </button>
+        <button
+          onClick={nextPrompt}
+          className="px-4 py-2 text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition ml-auto"
+        >
+          Try another →
+        </button>
+      </div>
+
+      {feedback && (
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <p className="text-sm font-medium text-slate-500 mb-2">AI feedback</p>
+          <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-slate-700 whitespace-pre-wrap text-sm leading-relaxed">
+            {feedback}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function App() {
+  const [mode, setMode] = useState('quiz')
   const [problems, setProblems] = useState([])
   const [queue, setQueue] = useState([])
   const [selected, setSelected] = useState(null)
@@ -111,6 +250,14 @@ function App() {
       .catch(console.error)
   }
 
+  function tabClass(value) {
+    const base = 'px-4 py-2 rounded-lg text-sm font-medium transition'
+    if (mode === value) {
+      return `${base} bg-indigo-600 text-white`
+    }
+    return `${base} bg-white border border-slate-200 text-slate-700 hover:bg-slate-50`
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -131,16 +278,54 @@ function App() {
   const progressPct = (masteredCount / problems.length) * 100
   const finished = queue.length === 0
 
+  const renderHeader = () => (
+    <header className="mb-6">
+      <h1 className="text-3xl font-bold text-slate-900 mb-3">AlgoTeach</h1>
+      <div className="flex gap-2 mb-4">
+        <button onClick={() => setMode('quiz')} className={tabClass('quiz')}>
+          Quiz
+        </button>
+        <button
+          onClick={() => setMode('practice')}
+          className={tabClass('practice')}
+        >
+          Practice
+        </button>
+      </div>
+      {mode === 'quiz' && (
+        <>
+          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-300 ${
+                finished ? 'bg-emerald-500' : 'bg-indigo-600'
+              }`}
+              style={{ width: `${finished ? 100 : progressPct}%` }}
+            />
+          </div>
+          <p className="text-sm text-slate-500 mt-2">
+            {masteredCount} of {problems.length} mastered
+          </p>
+        </>
+      )}
+    </header>
+  )
+
+  if (mode === 'practice') {
+    return (
+      <div className="min-h-screen bg-slate-50 py-8 px-4">
+        <div className="max-w-3xl mx-auto">
+          {renderHeader()}
+          <PracticeMode />
+        </div>
+      </div>
+    )
+  }
+
   if (finished) {
     return (
       <div className="min-h-screen bg-slate-50 py-8 px-4">
         <div className="max-w-5xl mx-auto">
-          <header className="mb-6">
-            <h1 className="text-3xl font-bold text-slate-900 mb-3">AlgoTeach</h1>
-            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500" style={{ width: '100%' }} />
-            </div>
-          </header>
+          {renderHeader()}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
@@ -223,18 +408,7 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4">
       <div className="max-w-5xl mx-auto">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900 mb-3">AlgoTeach</h1>
-          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-indigo-600 transition-all duration-300"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <p className="text-sm text-slate-500 mt-2">
-            {masteredCount} of {problems.length} mastered
-          </p>
-        </header>
+        {renderHeader()}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
