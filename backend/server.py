@@ -61,6 +61,23 @@ def explain_deeper(problem_id: str):
 
     return {"explanation": response.choices[0].message.content}
 
+@app.post("/api/attempts")
+def record_attempt(attempt: AttemptIn):
+    problem = db.problems.find_one({"id": attempt.problem_id}, {"_id": 0})
+    if problem is None:                                                                                                                             
+        raise HTTPException(status_code=404, detail="Problem not found")
+    record = {
+        "session_id": attempt.session_id,
+        "problem_id": attempt.problem_id,                                                                                                           
+        "selected": attempt.selected,
+        "correct": attempt.selected == problem["pattern"],                                                                                          
+        "pattern": problem["pattern"],                                                                                                              
+        "timestamp": datetime.utcnow(),
+    }
+    db.attempts.insert_one(record)
+    return {"ok": True}
+
+
 
 if __name__ == "__main__":
     import uvicorn
