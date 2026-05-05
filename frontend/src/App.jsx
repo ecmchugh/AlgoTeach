@@ -1,31 +1,10 @@
 import { useEffect, useState } from 'react'
+import { PRACTICE_PROMPTS } from './practiceProblems'
 
 const API_BASE = 'http://127.0.0.1:4000'
 const RECHECK_DELAY = 3
 
-const PRACTICE_PROMPTS = [
-  {
-    pattern: 'Sliding Window',
-    title: 'Maximum Subarray Sum of Size K',
-    description:
-      'Write a function that takes an array of integers and an integer k, and returns the maximum sum of any contiguous subarray of length k.',
-    starter: 'def max_sum(arr, k):\n    pass\n',
-  },
-  {
-    pattern: 'Sliding Window',
-    title: 'Longest Substring with K Distinct Characters',
-    description:
-      'Write a function that takes a string and an integer k, and returns the length of the longest substring containing at most k distinct characters.',
-    starter: 'def longest_substring(s, k):\n    pass\n',
-  },
-  {
-    pattern: 'Sliding Window',
-    title: 'Smallest Subarray With Given Sum',
-    description:
-      'Write a function that takes an array of positive integers and a target sum, and returns the length of the smallest contiguous subarray whose sum is greater than or equal to the target. Return 0 if no such subarray exists.',
-    starter: 'def smallest_subarray(arr, target):\n    pass\n',
-  },
-]
+const ALL_PATTERNS = [...new Set(PRACTICE_PROMPTS.map((p) => p.pattern))]
 
 function shuffle(arr) {
   const a = [...arr]
@@ -92,12 +71,16 @@ function StatsCard({ stats }) {
 }
 
 function PracticeMode() {
+  const [pattern, setPattern] = useState(ALL_PATTERNS[0])
   const [promptIndex, setPromptIndex] = useState(0)
-  const [code, setCode] = useState(PRACTICE_PROMPTS[0].starter)
+  const [code, setCode] = useState(
+    PRACTICE_PROMPTS.find((p) => p.pattern === ALL_PATTERNS[0]).starter
+  )
   const [feedback, setFeedback] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const current = PRACTICE_PROMPTS[promptIndex]
+  const promptsForPattern = PRACTICE_PROMPTS.filter((p) => p.pattern === pattern)
+  const current = promptsForPattern[promptIndex]
 
   function handleSubmit() {
     setLoading(true)
@@ -135,10 +118,18 @@ function PracticeMode() {
     }
   }
 
+  function changePattern(newPattern) {
+    const firstOfPattern = PRACTICE_PROMPTS.find((p) => p.pattern === newPattern)
+    setPattern(newPattern)
+    setPromptIndex(0)
+    setCode(firstOfPattern.starter)
+    setFeedback(null)
+  }
+
   function nextPrompt() {
-    const next = (promptIndex + 1) % PRACTICE_PROMPTS.length
+    const next = (promptIndex + 1) % promptsForPattern.length
     setPromptIndex(next)
-    setCode(PRACTICE_PROMPTS[next].starter)
+    setCode(promptsForPattern[next].starter)
     setFeedback(null)
   }
 
@@ -149,12 +140,27 @@ function PracticeMode() {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <p className="text-sm font-medium text-indigo-600 mb-1">
-        Practice · {current.pattern}
-      </p>
-      <h2 className="text-xl font-semibold text-slate-900 mb-3">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <p className="text-sm font-medium text-indigo-600">Practice mode</p>
+        <select
+          value={pattern}
+          onChange={(e) => changePattern(e.target.value)}
+          className="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white text-slate-700 focus:border-indigo-400 focus:outline-none"
+        >
+          {ALL_PATTERNS.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <h2 className="text-xl font-semibold text-slate-900 mb-1">
         {current.title}
       </h2>
+      <p className="text-xs text-slate-500 mb-3">
+        Problem {promptIndex + 1} of {promptsForPattern.length} for {pattern}
+      </p>
       <p className="text-slate-700 mb-5 leading-relaxed">
         {current.description}
       </p>
