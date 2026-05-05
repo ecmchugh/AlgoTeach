@@ -30,6 +30,11 @@ class AttemptIn(BaseModel):
     problem_id: str
     selected: str
 
+class CodeEvalRequest(BaseModel):
+    pattern: str
+    prompt: str
+    code: str
+
 app = FastAPI(title="AlgoTeach API")
 
 app.add_middleware(
