@@ -299,30 +299,30 @@ function App() {
           Practice
         </button>
       </div>
-      {mode === 'quiz' && (
-        <>
-          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-300 ${
-                finished ? 'bg-emerald-500' : 'bg-indigo-600'
-              }`}
-              style={{ width: `${finished ? 100 : progressPct}%` }}
-            />
-          </div>
-          <p className="text-sm text-slate-500 mt-2">
-            {masteredCount} of {problems.length} mastered
-          </p>
-        </>
-      )}
+      <div className={mode === 'quiz' ? '' : 'invisible'} aria-hidden={mode !== 'quiz'}>
+        <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all duration-300 ${
+              finished ? 'bg-emerald-500' : 'bg-indigo-600'
+            }`}
+            style={{ width: `${finished ? 100 : progressPct}%` }}
+          />
+        </div>
+        <p className="text-sm text-slate-500 mt-2">
+          {masteredCount} of {problems.length} mastered
+        </p>
+      </div>
     </header>
   )
 
   if (mode === 'practice') {
     return (
       <div className="min-h-screen bg-slate-50 py-8 px-4">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {renderHeader()}
-          <PracticeMode />
+          <div className="max-w-3xl mx-auto">
+            <PracticeMode />
+          </div>
         </div>
       </div>
     )
