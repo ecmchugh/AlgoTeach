@@ -111,6 +111,31 @@ def get_stats(session: str):
         "by_pattern": by_pattern,                                                                                                                   
     }
 
+@app.post("/api/evaluate-code")                                                                                                                     
+def evaluate_code(req: CodeEvalRequest):                  
+    eval_prompt = f"""You are a coding interview tutor. A learner is practicing the '{req.pattern}' algorithmic pattern.
+                                                                                                                                                    
+Problem they are solving:
+{req.prompt}                                                                                                                                        
+                                                                                                                                                    
+Their code:
+{req.code}                                                                                                                                          
+                                                        
+Evaluate their submission concisely (under 200 words). Address:
+1. Does the code correctly implement the {req.pattern} pattern? (yes / no / partially)
+2. Does it solve the problem correctly? (yes / no / partially)                                                                                      
+3. What is done well?
+4. What bugs or improvements should they consider?                                                                                                  
+                                                                                                                                                    
+Return plain readable feedback for the learner."""
+                                                                                                                                                    
+    response = openai_client.chat.completions.create(     
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": eval_prompt}],                                                                                        
+    )
+                                                                                                                                                    
+    return {"feedback": response.choices[0].message.content}
+
 
 
 if __name__ == "__main__":
