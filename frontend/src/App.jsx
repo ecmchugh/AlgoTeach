@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Editor from '@monaco-editor/react'
 import { PRACTICE_PROMPTS } from './practiceProblems'
 
-const API_BASE = 'http://127.0.0.1:4000'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:4000'
 const RECHECK_DELAY = 3
 
 const ALL_PATTERNS = [...new Set(PRACTICE_PROMPTS.map((p) => p.pattern))]
