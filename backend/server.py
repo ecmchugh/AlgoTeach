@@ -1,5 +1,7 @@
 import os
 import certifi
+import heapq
+import random
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from openai import OpenAI
@@ -146,6 +148,32 @@ Return plain readable feedback for the learner."""
     )
                                                                                                                                                     
     return {"feedback": response.choices[0].message.content}
+
+@app.get("/api/problems/recommended")
+def recommended_problems(session: str) -> list[Problem]:
+    pipeline = [
+        {"$match": {"session_id": session}},
+        {"$group": {                                                                                                                                
+            "_id": "$pattern",                            
+            "total": {"$sum": 1},
+            "correct": {"$sum": {"$cond": ["$correct", 1, 0]}},                                                                                     
+        }}, 
+    ]
+    stats = list(db.attempts.aggregate(pipeline))
+    pattern_rates = {s["_id"]: s["correct"] / s["total"] for s in stats}
+
+    all_problems = list(db.problems.find({}, {"_id": 0}))
+
+    heap = []
+    for problem in all_problems:
+        score = pattern_rates.get(problem["pattern"], 0.5)
+        heapq.heappush(heap, (score, random.random(), problem))
+
+    ordered = []
+    while heap:
+        _, _, p = heapq.heappop(heap)
+        ordered.append(p)
+    return ordered
 
 
 
