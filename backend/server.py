@@ -55,6 +55,10 @@ def list_problems() -> list[Problem]:
 
 @app.get("/api/problems/{problem_id}/explain-deeper")
 def explain_deeper(problem_id: str):
+    cached = db.cached_explanations.find_one({"problem_id": problem_id})
+    if cached:
+        return {"explanation": cached["explanation"], "cached": True}
+
     problem = db.problems.find_one({"id": problem_id}, {"_id": 0})
     if problem is None:
         raise HTTPException(status_code=404, detail="Problem not found")
@@ -63,8 +67,15 @@ def explain_deeper(problem_id: str):
         model = "gpt-4o-mini",
         messages = [{"role": "user", "content": prompt}]
     )
+    text = response.choices[0].message.content
 
-    return {"explanation": response.choices[0].message.content}
+    db.cached_explanations.insert_one({
+        "problem_id": problem_id,
+        "explanation": text,
+        "created_at": datetime.utcnow()
+    })
+
+    return {"explanation": text, "cached": False}
 
 @app.post("/api/attempts")
 def record_attempt(attempt: AttemptIn):
