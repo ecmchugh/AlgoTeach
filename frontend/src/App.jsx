@@ -221,11 +221,11 @@ function App() {
   const [sessionId] = useState(() => getSessionId())
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/problems`)
+    fetch(`${API_BASE}/api/problems/recommended?session=${sessionId}`)
       .then((res) => res.json())
       .then((data) => {
         setProblems(data)
-        setQueue(shuffle(data))
+        setQueue(data)
       })
       .catch((err) => setError(err.message))
 
