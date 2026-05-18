@@ -1,10 +1,8 @@
 # AlgoTeach
 
-A "Quizlet for algorithm intuition" that acts as a study tool that trains you to instantly recognize which algorithmic pattern applies to a LeetCode style problem. There is also a coding feature where AI can grade your coding based off of a problem.
+A "Quizlet for algorithm understanding" that acts as a study tool that trains you to instantly recognize which algorithmic pattern applies to a LeetCode style problem. There is also a coding feature where AI can grade your coding based off of a problem.
 
 **Live demo:** [algoteach-1.onrender.com](https://algoteach-1.onrender.com)
-
-> *Add screenshots / a short GIF of the app in action here.*
 
 ---
 
